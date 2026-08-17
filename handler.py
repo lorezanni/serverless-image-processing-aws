@@ -7,7 +7,7 @@ from decimal import Decimal
 import boto3
 from PIL import Image
 
-# Inizializzazione dei client AWS (preinstallati nel runtime Lambda)
+#Inizializzazione
 s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
 
@@ -15,33 +15,33 @@ def process_image(event, context):
     start_time = time.time()
     
     try:
-        # 1. Estrazione dei metadati dell'evento S3
+        #Estrazione evento S3
         record = event['Records'][0]
         src_bucket = record['s3']['bucket']['name']
         src_key = urllib.parse.unquote_plus(record['s3']['object']['key'])
         
         print(f"Inizio elaborazione per: {src_key} dal bucket: {src_bucket}")
         
-        # 2. Download dell'immagine da S3 in un buffer di memoria
+        #Download dell'immagine
         response = s3_client.get_object(Bucket=src_bucket, Key=src_key)
         input_bytes = response['Body'].read()
         original_size = len(input_bytes)
         
-        # 3. Elaborazione con Pillow (Resize + Compressione JPEG)
+        #Elaborazione
         processing_start_time = time.time()
         with Image.open(io.BytesIO(input_bytes)) as img:
-            # Conversione in RGB se l'immagine è RGBA/PNG
+            #Conversione in RGB
             if img.mode in ("RGBA", "P"):
                 img = img.convert("RGB")
             
-            # Ridimensionamento proporzionale se la larghezza supera 1024px
+            #Ridimensionamento proporzionale
             max_width = 1024
             if img.width > max_width:
                 aspect_ratio = img.height / img.width
                 new_height = int(max_width * aspect_ratio)
                 img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
             
-            # Salvataggio nel buffer di output compresso
+            #Salvataggio nel buffer di output compresso
             output_buffer = io.BytesIO()
             img.save(output_buffer, format="JPEG", quality=80, optimize=True)
             output_bytes = output_buffer.getvalue()
@@ -49,7 +49,7 @@ def process_image(event, context):
         processing_duration_ms = int((time.time() - processing_start_time) * 1000)
         processed_size = len(output_bytes)
         
-        # 4. Upload dell'immagine ottimizzata nel bucket di destinazione
+        #Upload dell'immagine ottimizzata nel bucket
         dest_bucket = os.environ['OUTPUT_BUCKET']
         base_name = os.path.splitext(src_key)[0]
         dest_key = f"optimized-{base_name}.jpg"
@@ -61,11 +61,11 @@ def process_image(event, context):
             ContentType="image/jpeg"
         )
         
-        # 5. Calcolo metriche di esecuzione
+        #Calcolo metriche
         total_duration_ms = int((time.time() - start_time) * 1000)
         compression_ratio = round(((original_size - processed_size) / original_size) * 100, 2)
         
-        # 6. Registrazione su DynamoDB
+        #Registrazione su DynamoDB
         table = dynamodb.Table(os.environ['TABLE_NAME'])
         metric_item = {
             'imageId': f"{int(time.time() * 1000)}_{src_key}",
