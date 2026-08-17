@@ -1,0 +1,7 @@
+"imageId","compressionRatioPercent","originalFilename","originalSizeKB","processedFilename","processedSizeKB","processingTimeMs","timestamp","totalExecutionTimeMs"
+"1786971658433_test-medium-1920x1080.jpg","90.03","test-medium-1920x1080.jpg","3257.02","optimized-test-medium-1920x1080.jpg","324.87","2859","2026-08-17T13:00:58.433Z","3200"
+"1786971703623_test-xlarge-3840x2160.jpg","97.57","test-xlarge-3840x2160.jpg","13060.15","optimized-test-xlarge-3840x2160.jpg","317.21","7136","2026-08-17T13:01:43.623Z","7477"
+"1786971682854_test-large-2560x1440.jpg","94.67","test-large-2560x1440.jpg","5800.96","optimized-test-large-2560x1440.jpg","309.17","3791","2026-08-17T13:01:22.854Z","4033"
+"1786971613222_test-small-800x600.jpg","49.03","test-small-800x600.jpg","752.37","optimized-test-small-800x600.jpg","383.50","1431","2026-08-17T13:00:13.222Z","1690"
+"1786962548453_prova.jpeg","'-32.21","prova.jpeg","53.28","optimized-prova.jpg","70.44","1870","2026-08-17T10:29:08.453Z","2167"
+"1786962595027_prova.jpeg","'-32.21","prova.jpeg","53.28","optimized-prova.jpg","70.44","1807","2026-08-17T10:29:55.027Z","2004"

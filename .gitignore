@@ -1,0 +1,13 @@
+# Serverless Framework cache & build
+.serverless/
+
+# Node dependencies
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Cartelle temporanee locali
+package/
+.env

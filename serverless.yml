@@ -1,0 +1,74 @@
+service: image-processing-serverless
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: eu-west-1
+  memorySize: 1024
+  timeout: 30
+  environment:
+    OUTPUT_BUCKET: !Ref ProcessedImagesBucket
+    TABLE_NAME: !Ref ImageMetricsTable
+    PYTHONPATH: /var/task/package
+  iam:
+    role:
+      statements:
+        # Permessi di lettura dal bucket di input
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+          Resource:
+            - !Sub "arn:aws:s3:::${UploadImagesBucket}/*"
+        # Permessi di scrittura nel bucket di output
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+          Resource:
+            - !Sub "arn:aws:s3:::${ProcessedImagesBucket}/*"
+        # Permessi di inserimento dati su DynamoDB
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+          Resource:
+            - !GetAtt ImageMetricsTable.Arn
+
+package:
+  patterns:
+    - handler.py
+    - package/**
+
+functions:
+  processImage:
+    handler: handler.process_image
+    events:
+      - s3:
+          bucket: !Ref UploadImagesBucket
+          event: s3:ObjectCreated:*
+          existing: true
+
+resources:
+  Resources:
+    # 1. Bucket S3 di Input
+    UploadImagesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: !Sub "tesi-upload-images-${AWS::AccountId}"
+
+    # 2. Bucket S3 di Output
+    ProcessedImagesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: !Sub "tesi-processed-images-${AWS::AccountId}"
+
+    # 3. Tabella DynamoDB per Metriche e Log
+    ImageMetricsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ImageProcessingMetrics
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: imageId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: imageId
+            KeyType: HASH
